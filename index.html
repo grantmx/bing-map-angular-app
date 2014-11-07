@@ -1,0 +1,168 @@
+<!doctype html>
+<html ng-app="sample">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title></title>
+<style type="text/css">
+body{margin:0;padding: 0}
+.align-left{float: left}
+.align-right{float: right;}
+.form-container{width: 300px; padding: 20px}
+</style>
+</head>
+
+<body>
+
+<div ng-controller="SampleController">
+    
+    <map width="map.width" height="map.height" zoom="map.zoom" latitude="map.latitude" longitude="map.longitude" pins="map.pins"></map>
+    
+    <div class="align-left form-container">
+        <p>
+            <label>latitude</label><br>
+            <input type="number" ng-model="map.latitude" placeholder="latitude"><br>
+
+            <label>longitude</label><br>
+            <input type="number" ng-model="map.longitude" placeholder="longitude">
+        </p>
+    </div>
+</div>
+
+<script src="angular.js"></script>
+<script src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0" type="text/javascript"></script>
+<script>
+var map, pinLayer, infoboxLayer,
+    bingKey = "AnyJ1pJIM0uk8kD5sxuanwFUoU6qtwh-HpPg0xXtV4j-L10QLFss6qf9lWMfDnWh";
+
+angular
+    .module("sample", [])
+    .controller("SampleController", ["$scope", function ($scope) {
+        $scope.map = {
+            zoom: 8,
+            width: 800,
+            height: 600,
+            latitude: 39.8282,
+            longitude: -98.5795,
+            pins: 
+        };
+    }])
+
+    /* Bing Map Directive Definition
+    -------------------------------------------*/
+    .directive("map", function (){
+        return {
+            scope: {
+                pins: "=pins", //array
+                latitude: "=latitude", //number
+                longitude: "=longitude", //number
+                zoom: "=zoom", //number
+                //events: "=events",
+                //bounds: "=bounds",
+                //infoWindow: "=infoWindow",
+                width: "=width", //number
+                height: "=height" //number
+            },
+            restrict: "E",
+            template: ['<div class="bing-container align-left">',
+                            '<div id="bingMap" class="map-cntr">',
+                                //'<a href="#" class="map-button btn hide traffic" id="trafficToggle">Traffic</a>',
+                                //'<a href="#" class="map-button btn hide traffic-reset" id="mapReset">Reset Map</a>',
+                            '</div>',
+                        '</div>'].join(""),
+            replace: true,
+            transclude: true,
+            link: function(scope, element) {
+                var markers, lat, lon, pin;
+
+                //Initlized center
+                scope.center = new Microsoft.Maps.Location(scope.latitude, scope.longitude);
+ 
+
+                /* Bing Map Initializer
+                ------------------------------------------------------*/
+                map = new Microsoft.Maps.Map(document.getElementById('bingMap'),{
+                    credentials: bingKey,
+                    showBreadcrumb: false,
+                    enableSearchLogo: false,
+                    labelOverlay: Microsoft.Maps.LabelOverlay.hidden,
+                    enableClickableLogo: false,
+                    fixedMapPosition: true,
+                    zoom: scope.zoom,
+                    width: scope.width,
+                    height: scope.height,
+                    center: scope.center
+                });
+
+
+                /* Create two layers, one for pushpins, the other for the infobox.
+                    - This way the infobox will always be above the pushpins
+                ---------------------------------------------------------------------*/
+                pinLayer = new Microsoft.Maps.EntityCollection();
+                map.entities.push(pinLayer);
+
+                infoboxLayer = new Microsoft.Maps.EntityCollection();
+                map.entities.push(infoboxLayer);
+
+
+
+                //lat & long watcher on the center values and re-instantiate map
+                scope.$watchCollection("[latitude, longitude]", function (newVal, oldVal){
+                   scope.center = new Microsoft.Maps.Location(scope.latitude, scope.longitude);
+
+                   //instantiate the new map view with the new center
+                   map.setView({ center: scope.center });
+                });
+                
+
+
+                /*helper function to get and set lat/Lon value*/
+                function getLatLon(i){
+                    markers = $scope.map.pins[i];
+                    markers = markers.split(",");
+
+                    lat = parseFloat(markers[0]);
+                    lon = parseFloat(markers[1]);
+
+                    return lat, lon;
+                }
+
+
+
+                function setPins(){
+                    /*sets each push-pin and it's infoWindow on the map*/
+                    for (i = 0; i < howManyLocations ; i += 1) {
+                        getLatLon(i);
+
+                        pushpinOptions = {
+                            icon: (Number(thisStore.stores[i].storeID) === Number(storeNumber)) ? myStoreIcon : storeIcon,
+                            text: "A",
+                            visible: true,
+                            textOffset: new Microsoft.Maps.Point(0, 5)
+                        };
+
+                        /*push out this push pin*/
+                        pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(lat, lon), pushpinOptions);
+                        pinLayer.push(pin);
+
+                        /*set this push-pin's infoWindow*/
+                        infoWindow = new Microsoft.Maps.Infobox(new Microsoft.Maps.Location(lat, lon), {visible: false});
+                        infoboxLayer.push(infoWindow);
+
+                        /* Add event handler for hovering over/off this push-pin*/
+                        Microsoft.Maps.Events.addHandler(pin, 'click', showInfoWindow);
+                        Microsoft.Maps.Events.addHandler(pin, 'click', deleteInfoWindows); /*remove any stray infoWindows*/
+                    }
+
+                }
+            }
+        };
+    });
+
+</script>
+
+<!--<script src="angular.bingMap.directive.js"></script>-->
+</body>
+</html>
