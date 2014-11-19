@@ -10,7 +10,7 @@
 *	Originally written by: Marshall Grant (mxg6082)
 * =================================================================================================================*/
 
-!function (angular, THD, Microsoft){
+!function (angular, Microsoft){
 
 	var bingMapsModule = angular.module("bing-maps", []),
 		bingKey = "AnyJ1pJIM0uk8kD5sxuanwFUoU6qtwh-HpPg0xXtV4j-L10QLFss6qf9lWMfDnWh";
@@ -80,4 +80,4 @@
 
 	}]);
 
-}(window.angular, window.THD, window.Microsoft);
+}(window.angular, window.Microsoft);
