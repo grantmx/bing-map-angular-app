@@ -1,4 +1,4 @@
-Bing Maps Angular Application
+Microsoft (Bing) Maps Angular Application
 ================================
 
 A simple reusable AngularJS Application for Bing Maps.  Uses AngularJS 1.2 and Microsoft Maps Ajax Control 7.0.
